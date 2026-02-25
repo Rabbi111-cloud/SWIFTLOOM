@@ -1,31 +1,28 @@
-export const dynamic = "force-dynamic";
-
-"use client";
+"use client"; // MUST be first line
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/auth";
-import { useRouter, useSearchParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firestore";
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fromSignup = searchParams.get("fromSignup");
+  const fromSignup = searchParams?.get("fromSignup");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const user = cred.user;
 
-      // Check onboarding status
+      // check onboarding status
       const userDoc = await getDoc(doc(db, "users", user.uid));
       const data = userDoc.data();
 
@@ -35,7 +32,7 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } catch (err) {
-      console.error("Login error:", err);
+      console.error(err);
       alert(err.message);
     } finally {
       setLoading(false);
@@ -45,7 +42,6 @@ export default function LoginPage() {
   return (
     <div style={{ padding: 40 }}>
       <h1>Login</h1>
-
       {fromSignup && (
         <p style={{ color: "green" }}>
           Account created successfully. Please log in.
@@ -59,7 +55,6 @@ export default function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           style={{ display: "block", marginBottom: 10 }}
         />
-
         <input
           placeholder="Password"
           type="password"
@@ -67,7 +62,6 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           style={{ display: "block", marginBottom: 10 }}
         />
-
         <button
           onClick={handleLogin}
           disabled={loading}
