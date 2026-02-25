@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 "use client";
 
 import { useState } from "react";
@@ -9,18 +11,26 @@ import { db } from "@/firebase/firestore";
 
 export default function LoginPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const fromSignup = params.get("fromSignup");
+  const searchParams = useSearchParams();
+  const fromSignup = searchParams.get("fromSignup");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, password);
+      setLoading(true);
+
+      const cred = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
       const user = cred.user;
 
-      // 🔥 check onboarding status
+      // 🔥 Check onboarding status
       const userDoc = await getDoc(doc(db, "users", user.uid));
       const data = userDoc.data();
 
@@ -30,12 +40,15 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } catch (err) {
+      console.error("Login error:", err);
       alert(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
+    <div style={{ padding: 40 }}>
       <h1>Login</h1>
 
       {fromSignup && (
@@ -44,18 +57,33 @@ export default function LoginPage() {
         </p>
       )}
 
-      <input
-        placeholder="Email"
-        onChange={(e) => setEmail(e.target.value)}
-      />
+      <div style={{ marginTop: 20 }}>
+        <input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ display: "block", marginBottom: 10 }}
+        />
 
-      <input
-        placeholder="Password"
-        type="password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <input
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ display: "block", marginBottom: 10 }}
+        />
 
-      <button onClick={handleLogin}>Login</button>
+        <button
+          onClick={handleLogin}
+          disabled={loading}
+          style={{
+            padding: "10px 16px",
+            cursor: loading ? "not-allowed" : "pointer",
+          }}
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
+      </div>
     </div>
   );
 }
