@@ -4,10 +4,10 @@ export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebase/auth";
+import { auth } from "../../firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/firebase/firestore";
+import { db } from "../../firebase/firestore";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,15 +22,10 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      const cred = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
+      const cred = await signInWithEmailAndPassword(auth, email, password);
       const user = cred.user;
 
-      // 🔥 Check onboarding status
+      // Check onboarding status
       const userDoc = await getDoc(doc(db, "users", user.uid));
       const data = userDoc.data();
 
