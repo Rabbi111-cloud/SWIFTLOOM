@@ -3,45 +3,37 @@ export const dynamic = "force-dynamic";
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebase/auth";
-import { useRouter, useSearchParams } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/firebase/firestore";
+import { useRouter } from "next/navigation";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { auth } from "../../firebase/auth";
+import { db } from "../../firebase/firestore";
 
-export default function LoginPage() {
+export default function OnboardingPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const fromSignup = searchParams.get("fromSignup");
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleFinishOnboarding = async () => {
     try {
       setLoading(true);
 
-      const cred = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const user = auth.currentUser;
 
-      const user = cred.user;
-
-      // 🔥 Check onboarding status
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      const data = userDoc.data();
-
-      if (!data?.onboardingCompleted) {
-        router.push("/onboarding");
-      } else {
-        router.push("/dashboard");
+      if (!user) {
+        alert("You must be logged in.");
+        router.push("/login");
+        return;
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      alert(err.message);
+
+      await updateDoc(doc(db, "users", user.uid), {
+        onboardingCompleted: true,
+        onboardingCompletedAt: serverTimestamp(),
+        lastLoginAt: serverTimestamp(),
+      });
+
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Onboarding error:", error);
+      alert("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -49,41 +41,22 @@ export default function LoginPage() {
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>Login</h1>
+      <h1>Welcome 👋</h1>
+      <p>Let’s finish setting up your account.</p>
 
-      {fromSignup && (
-        <p style={{ color: "green" }}>
-          Account created successfully. Please log in.
-        </p>
-      )}
+      {/* Add your onboarding inputs or questions here */}
 
-      <div style={{ marginTop: 20 }}>
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ display: "block", marginBottom: 10 }}
-        />
-
-        <input
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ display: "block", marginBottom: 10 }}
-        />
-
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          style={{
-            padding: "10px 16px",
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </div>
+      <button
+        onClick={handleFinishOnboarding}
+        disabled={loading}
+        style={{
+          marginTop: 20,
+          padding: "10px 16px",
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "Finishing..." : "Finish Setup"}
+      </button>
     </div>
   );
 }
