@@ -1,6 +1,4 @@
-export const dynamic = "force-dynamic";
-
-"use client";
+"use client"; // Must be the very first line
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -43,8 +41,6 @@ export default function OnboardingPage() {
     <div style={{ padding: 40 }}>
       <h1>Welcome 👋</h1>
       <p>Let’s finish setting up your account.</p>
-
-      {/* Add your onboarding inputs or questions here */}
 
       <button
         onClick={handleFinishOnboarding}
