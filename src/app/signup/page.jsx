@@ -13,7 +13,7 @@ export default function SignupPage() {
   const handleSignup = async () => {
     try {
       await signupUser({ email, password, fullName });
-      router.push("/onboarding");
+      router.push("/login?fromSignup=true");
     } catch (err) {
       alert(err.message);
     }
