@@ -1,10 +1,9 @@
-"use client";
-
+"use client";  // MUST be first line
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "../../firebase/auth";
 import { auth } from "../../firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firestore";
@@ -18,6 +17,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // ensure browser-only code
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
   const handleLogin = async () => {
     setLoading(true);
@@ -44,12 +48,7 @@ export default function LoginPage() {
   return (
     <div style={{ padding: 40 }}>
       <h1>Login</h1>
-
-      {fromSignup && (
-        <p style={{ color: "green" }}>
-          Account created successfully. Please login.
-        </p>
-      )}
+      {fromSignup && <p style={{ color: "green" }}>Account created. Log in!</p>}
 
       <input
         placeholder="Email"
